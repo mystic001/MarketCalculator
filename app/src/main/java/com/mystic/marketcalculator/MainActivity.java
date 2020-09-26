@@ -203,9 +203,7 @@ public class MainActivity extends AppCompatActivity {
                 String number = initialAnswer.getText().toString();
                 if(number.length() == 1  && number.equals("0")){
                     initialAnswer.setText((number+dot.getText().toString()));
-                } else if(number.charAt(number.length()-1) == '+' || number.charAt(number.length()-1) == '-'
-                        || number.charAt(number.length()-1) == 'x'
-                        || number.charAt(number.length()-1) == '/' || number.charAt(number.length()-1) == '%' || number.charAt(number.length()-1) == '.' ){
+                } else if(number.charAt(number.length()-1) == '.' ){
                     return ;
                 } else{
                     String addSymbol = dot.getText().toString();
@@ -292,19 +290,19 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 String number = initialAnswer.getText().toString();
                 try{
-                    if(!numberStack.isEmpty()){
-                        if(!number.contentEquals("")){
-                            numberStack.push(number);
+                    if(!numberStack.isEmpty()){ //Check if the stack is not empty
+                        if(!number.contentEquals("")){ //Check if the value we are pushing to the stack is not an empty string
+                            numberStack.push(number);//If it is not an empty string then the number is pushed to the stack otherwise nothing is added to the stack
                         }
-                        if(numberStack.get(numberStack.size()-1).contentEquals(addition.getText())
+                        if(numberStack.get(numberStack.size()-1).contentEquals(addition.getText()) //This allows us to check if there is any operator as the last element in the stacj if it returns an operator as the last element then we change it to whatever the user enters
                                 || numberStack.get(numberStack.size()-1).contentEquals(subtraction.getText())
                                 || numberStack.get(numberStack.size()-1).contentEquals(multiplication.getText())
                                 || numberStack.get(numberStack.size()-1).contentEquals(division.getText())){
-                            numberStack.set((numberStack.size() - 1),addition.getText().toString());
+                            numberStack.set((numberStack.size() - 1),addition.getText().toString()); //This is where we make the changes
                             return ;
                         }
 
-                        double res = evaluate(numberStack);
+                        double res = evaluate(numberStack); //Then the normal operation is carried out
                         numberStack.push(Double.toString(res));
                         answer.setText(Double.toString(res));
                     }
@@ -571,10 +569,31 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String number = initialAnswer.getText().toString();
-                numberStack.push(number);
-                double res = evaluate(numberStack);
-                answer.setText(Double.toString(res));
-                initialAnswer.setText(Double.toString(res));
+                try{
+                   if(!number.contentEquals("")){
+                       numberStack.push(number);
+                    }
+
+                    if(numberStack.get(numberStack.size()-1).contentEquals(addition.getText())
+                            || numberStack.get(numberStack.size()-1).contentEquals(subtraction.getText())
+                            || numberStack.get(numberStack.size()-1).contentEquals(multiplication.getText())
+                            || numberStack.get(numberStack.size()-1).contentEquals(division.getText())){
+                        Toast.makeText(MainActivity.this,"Not  allowed",Toast.LENGTH_SHORT).show();
+                        return ;
+
+                    }
+
+
+                    double res = evaluate(numberStack);
+                    answer.setText(Double.toString(res));
+                    initialAnswer.setText(Double.toString(res));
+
+                }catch(NullPointerException nu){
+                    Toast.makeText(MainActivity.this,"Error: "+nu,Toast.LENGTH_SHORT)
+                            .show();
+                    return;
+                }
+
             }
         });
 
