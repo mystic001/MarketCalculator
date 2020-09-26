@@ -607,14 +607,14 @@ public class MainActivity extends AppCompatActivity {
     Double firstNum = Double.parseDouble(numberStack.pop());
 
     if(operand.contentEquals(addition.getText())){
-        return add(secondNum,firstNum);
+        return add(firstNum,secondNum);
 
     }else if(operand.contentEquals(subtraction.getText())){
-        return subtract(secondNum,firstNum);
+        return subtract(firstNum,secondNum);
     }else if(operand.contentEquals(division.getText())){
-        return divide(secondNum,firstNum);
+        return divide(firstNum,secondNum);
     }else if(operand.contentEquals(multiplication.getText())){
-        return multiply(secondNum,firstNum);
+        return multiply(firstNum,secondNum);
     }
 
     }catch(EmptyStackException em){
