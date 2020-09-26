@@ -203,7 +203,8 @@ public class MainActivity extends AppCompatActivity {
                 String number = initialAnswer.getText().toString();
                 if(number.length() == 1  && number.equals("0")){
                     initialAnswer.setText((number+dot.getText().toString()));
-                } else if(number.charAt(number.length()-1) == '.' ){
+                } else if(number.contains(".") ){
+                    Toast.makeText(MainActivity.this, "contains dot",Toast.LENGTH_SHORT).show();
                     return ;
                 } else{
                     String addSymbol = dot.getText().toString();
