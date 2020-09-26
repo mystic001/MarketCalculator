@@ -3,35 +3,37 @@ package com.mystic.marketcalculator;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.EmptyStackException;
 import java.util.Stack;
+import java.lang.StringIndexOutOfBoundsException;
 
 
 public class MainActivity extends AppCompatActivity {
-
     public  final String TAG = "Market";
     private TextView one, two, three, four, five, six,
             seven,eight,nine,zero,initialAnswer,
             open,close,percent,del,division,addition,
             subtraction,multiplication,dot,equal,clear, answer ;
 
-    //Stack<Double> numberStack = new Stack<>();
-
+    Stack<String> numberStack = new Stack<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //Call the method to define all the views
+        Log.e("Mainactivity","Whine");
         define();
         //A call to the  method to recat to every click
         textChange();
     }
 
-//This is where i declared all my views
+    //This is where i declared all my views
     public void define(){
         initialAnswer = findViewById(R.id.initial);
         answer = findViewById(R.id.answer);
@@ -56,12 +58,11 @@ public class MainActivity extends AppCompatActivity {
         subtraction = findViewById(R.id.subtraction);
         clear = findViewById(R.id.clear);
         dot = findViewById(R.id.dot);
-    }
 
+    }
 
     //this method contains the listener which allows us to easily change the views will are rendering on the calculator screen
     public void textChange(){
-
         zero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -92,45 +93,36 @@ public class MainActivity extends AppCompatActivity {
         two.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 String msg = two.getText().toString();
                 if(initialAnswer.getText().toString().equals("0")){//This line is to check if the value on the screen is 0 so we can just remove the zero  and enter the new number
                     initialAnswer.setText(msg);
                 } else{
                     initialAnswer.setText((initialAnswer.getText().toString()+msg));//But if the value is not zero just append the value we are entering at the end of the value already on the screen
                 }
-
-
             }
         });
 
         three.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 String msg = three.getText().toString();
                 if(initialAnswer.getText().toString().equals("0")){
                     initialAnswer.setText(msg);
                 } else{
                     initialAnswer.setText((initialAnswer.getText().toString()+msg));
                 }
-
-
             }
         });
 
         four.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 String msg = four.getText().toString();
                 if(initialAnswer.getText().toString().equals("0")){
                     initialAnswer.setText(msg);
                 } else{
                     initialAnswer.setText((initialAnswer.getText().toString()+msg));
                 }
-
-
             }
         });
 
@@ -152,7 +144,6 @@ public class MainActivity extends AppCompatActivity {
         six.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 String msg = six.getText().toString();
                 if(initialAnswer.getText().toString().equals("0")){
                     initialAnswer.setText(msg);
@@ -160,14 +151,12 @@ public class MainActivity extends AppCompatActivity {
                     initialAnswer.setText((initialAnswer.getText().toString()+msg));
                 }
 
-
             }
         });
 
         seven.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 String msg = seven.getText().toString();
                 if(initialAnswer.getText().toString().equals("0")){
                     initialAnswer.setText(msg);
@@ -197,7 +186,6 @@ public class MainActivity extends AppCompatActivity {
         nine.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 String msg = nine.getText().toString();
                 if(initialAnswer.getText().toString().equals("0")){
                     initialAnswer.setText(msg);
@@ -265,6 +253,7 @@ public class MainActivity extends AppCompatActivity {
                 String ans = "";
                 initialAnswer.setText(number);
                 answer.setText(ans);
+                numberStack.clear();
             }
         });
 
@@ -273,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String numbers = initialAnswer.getText().toString();
-                if(numbers.length() == 1){
+                if(numbers.length() <= 1){
                     String number = "0";
                     initialAnswer.setText(number);
                 } else {
@@ -288,8 +277,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 try{
-                    Double number = Double.parseDouble(initialAnswer.getText().toString());
-                    Double new_num = number/100;
+                    double number = Double.parseDouble(initialAnswer.getText().toString());
+                    double new_num = number/100;
                     answer.setText(Double.toString(new_num));
                 }catch(NumberFormatException e){
                     Toast.makeText(MainActivity.this,"Error: "+e,Toast.LENGTH_SHORT).show();
@@ -302,17 +291,77 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String number = initialAnswer.getText().toString();
-                if(number.charAt(number.length()-1) == '+' || number.charAt(number.length()-1) == '-'
-                        || number.charAt(number.length()-1) == 'x'
-                        || number.charAt(number.length()-1) == '/'
-                        || number.charAt(number.length()-1) == '%'
-                        || number.charAt(number.length()-1) == '.'
-                        || number.charAt(number.length()-1) == '('){
-                    return ;
-                } else{
-                    String addSymbol = addition.getText().toString();
-                    initialAnswer.setText((number+addSymbol));
+                try{
+                    if(!numberStack.isEmpty()){
+                        if(!number.contentEquals("")){
+                            numberStack.push(number);
+                        }
+                        if(numberStack.get(numberStack.size()-1).contentEquals(addition.getText())
+                                || numberStack.get(numberStack.size()-1).contentEquals(subtraction.getText())
+                                || numberStack.get(numberStack.size()-1).contentEquals(multiplication.getText())
+                                || numberStack.get(numberStack.size()-1).contentEquals(division.getText())){
+                            numberStack.set((numberStack.size() - 1),addition.getText().toString());
+                            return ;
+                        }
+
+                        double res = evaluate(numberStack);
+                        numberStack.push(Double.toString(res));
+                        answer.setText(Double.toString(res));
+                    }
+                    else {
+                        numberStack.push(number);
+                    }
+
+                    numberStack.push(addition.getText().toString());
+                    initialAnswer.setText("");
+/////////////////////////////////////////////////////////////////////////////////
+                    /*if(numberStack.get(numberStack.size()-1).contentEquals("+")
+                            || numberStack.get(numberStack.size()-1).contentEquals("-")
+                            || numberStack.get(numberStack.size()-1).contentEquals("x")
+                            || numberStack.get(numberStack.size()-1).contentEquals("/")) {
+                        numberStack.set(numberStack.size() - 1, addition.getText().toString());
+                        return;
+                    }
+                   if(number.charAt(number.length()-1) == '+' || number.charAt(number.length()-1) == '-'
+                            || number.charAt(number.length()-1) == 'x'
+                            || number.charAt(number.length()-1) == '/'
+                            || number.charAt(number.length()-1) == '%'
+                            || number.charAt(number.length()-1) == '.'
+                            || number.charAt(number.length()-1) == '('){
+                        return ;
+                    }
+                   else{
+                        if(!numberStack.isEmpty()){
+                            if(!number.contentEquals("")){
+                                numberStack.push(number);
+                            }
+                            if(numberStack.get(numberStack.size()-1).contentEquals(addition.getText())
+                                    || numberStack.get(numberStack.size()-1).contentEquals(subtraction.getText())
+                                    || numberStack.get(numberStack.size()-1).contentEquals(multiplication.getText())
+                                    || numberStack.get(numberStack.size()-1).contentEquals(division.getText())){
+                                numberStack.set((numberStack.size() - 1),addition.getText().toString());
+                                return ;
+                            }
+
+                            double res = evaluate(numberStack);
+                            numberStack.push(Double.toString(res));
+                            answer.setText(Double.toString(res));
+
+                        }else{
+                            numberStack.push(number);
+                        }
+
+                        numberStack.push(addition.getText().toString());
+                        initialAnswer.setText("");
+                    }*/
+
+                }catch (StringIndexOutOfBoundsException ex){
+                    Toast.makeText(MainActivity.this,"Error: "+ex,Toast.LENGTH_SHORT)
+                            .show();
+                    return;
+
                 }
+
             }
         });
 
@@ -321,18 +370,66 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String number = initialAnswer.getText().toString();
-                if(number.charAt(number.length()-1) == '+' || number.charAt(number.length()-1) == '-'
-                        || number.charAt(number.length()-1) == 'x'
-                        || number.charAt(number.length()-1) == '/'
-                        || number.charAt(number.length()-1) == '%'
-                        || number.charAt(number.length()-1) == '.'
-                        || number.charAt(number.length()-1) == '('
-                        || number.charAt(number.length()-1) == ')'){
-                    return ;
-                } else{
-                    String addSymbol = subtraction.getText().toString();
-                    initialAnswer.setText((number+addSymbol));
+                try{
+                    if(!numberStack.isEmpty()){
+                        if(!number.contentEquals("")){
+                            numberStack.push(number);
+                        }
+                        if(numberStack.get(numberStack.size()-1).contentEquals(addition.getText())
+                                || numberStack.get(numberStack.size()-1).contentEquals(subtraction.getText())
+                                || numberStack.get(numberStack.size()-1).contentEquals(multiplication.getText())
+                                || numberStack.get(numberStack.size()-1).contentEquals(division.getText())){
+                            numberStack.set((numberStack.size() - 1),subtraction.getText().toString());
+                            return ;
+                        }
+
+                        double res = evaluate(numberStack);
+                        numberStack.push(Double.toString(res));
+                        answer.setText(Double.toString(res));
+                    }
+                    else {
+                        numberStack.push(number);
+                    }
+
+                    numberStack.push(subtraction.getText().toString());
+                    initialAnswer.setText("");
+//////////////////////////////////////////////////////////////////////////////////////////
+                  /*  if(numberStack.get(numberStack.size()-1).contentEquals("+")
+                            || numberStack.get(numberStack.size()-1).contentEquals("-")
+                            || numberStack.get(numberStack.size()-1).contentEquals("x")
+                            || numberStack.get(numberStack.size()-1).contentEquals("/")){
+                        numberStack.set(numberStack.size()-1,subtraction.getText().toString());
+                        return;
+
+                    if(number.charAt(number.length()-1) == '+' || number.charAt(number.length()-1) == '-'
+                            || number.charAt(number.length()-1) == 'x'
+                            || number.charAt(number.length()-1) == '/'
+                            || number.charAt(number.length()-1) == '%'
+                            || number.charAt(number.length()-1) == '.'
+                            || number.charAt(number.length()-1) == '('
+                            || number.charAt(number.length()-1) == ')'){
+                        return ;
+                    } else{
+                        if(!numberStack.isEmpty()){
+                            numberStack.push(number);
+                            Double res = evaluate(numberStack);
+                            numberStack.push(res.toString());
+                            answer.setText(res.toString());
+                            numberStack.push(subtraction.getText().toString());
+                            initialAnswer.setText("");
+                        }else{
+                            numberStack.push(number);
+                            numberStack.push(subtraction.getText().toString());
+                            initialAnswer.setText("");
+                        }
+                    }*/
+
+                }catch(StringIndexOutOfBoundsException ex){
+                    Toast.makeText(MainActivity.this,"Error: "+ex,Toast.LENGTH_SHORT)
+                            .show();
+                    return;
                 }
+
             }
         });
 
@@ -341,18 +438,64 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String number = initialAnswer.getText().toString();
-                if(number.charAt(number.length()-1) == '+' || number.charAt(number.length()-1) == '-'
-                        || number.charAt(number.length()-1) == 'x'
-                        || number.charAt(number.length()-1) == '/'
-                        || number.charAt(number.length()-1) == '%'
-                        || number.charAt(number.length()-1) == '.'
-                        || number.charAt(number.length()-1) == '('
-                        || number.charAt(number.length()-1) == ')'){
-                    return ;
-                } else{
-                    String addSymbol = multiplication.getText().toString();
-                    initialAnswer.setText((number+addSymbol));
+                try{
+
+                    if(!numberStack.isEmpty()){
+                        if(!number.contentEquals("")){
+                            numberStack.push(number);
+                        }
+                        if(numberStack.get(numberStack.size()-1).contentEquals(addition.getText())
+                                || numberStack.get(numberStack.size()-1).contentEquals(subtraction.getText())
+                                || numberStack.get(numberStack.size()-1).contentEquals(multiplication.getText())
+                                || numberStack.get(numberStack.size()-1).contentEquals(division.getText())){
+                            numberStack.set((numberStack.size() - 1),multiplication.getText().toString());
+                            return ;
+                        }
+
+                        double res = evaluate(numberStack);
+                        numberStack.push(Double.toString(res));
+                        answer.setText(Double.toString(res));
+                    }
+                    else {
+                        numberStack.push(number);
+                    }
+
+                    numberStack.push(multiplication.getText().toString());
+                    initialAnswer.setText("");
+
+                    ////////////////////////////////////////////////////////////////
+                   /* if(number.charAt(number.length()-1) == '+' || number.charAt(number.length()-1) == '-'
+                            || number.charAt(number.length()-1) == 'x'
+                            || number.charAt(number.length()-1) == '/'
+                            || number.charAt(number.length()-1) == '%'
+                            || number.charAt(number.length()-1) == '.'
+                            || number.charAt(number.length()-1) == '('
+                            || number.charAt(number.length()-1) == ')'){
+                        return ;
+                    } else{
+
+                        if(!numberStack.isEmpty()){
+                            numberStack.push(number);
+                            Double res = evaluate(numberStack);
+                            numberStack.push(res.toString());
+                            answer.setText(res.toString());
+                            numberStack.push(multiplication.getText().toString());
+                            initialAnswer.setText("");
+
+                        }else{
+                            numberStack.push(number);
+                            numberStack.push(multiplication.getText().toString());
+                            initialAnswer.setText("");
+                        }
+
+                    }*/
+                   ///////////////////////////////////////////////////////////////
+                }catch(StringIndexOutOfBoundsException ex){
+                    Toast.makeText(MainActivity.this,"Error: "+ex,Toast.LENGTH_SHORT)
+                            .show();
+                    return;
                 }
+
             }
         });
 
@@ -360,92 +503,107 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String number = initialAnswer.getText().toString();
-                if(number.charAt(number.length()-1) == '+' || number.charAt(number.length()-1) == '-'
-                        || number.charAt(number.length()-1) == 'x'
-                        || number.charAt(number.length()-1) == '/'
-                        || number.charAt(number.length()-1) == '%'
-                        || number.charAt(number.length()-1) == '.'
-                        || number.charAt(number.length()-1) == '('
-                        || number.charAt(number.length()-1) == ')'){
-                    return;
-                } else{
-                    String addSymbol = division.getText().toString();
-                    initialAnswer.setText((number+addSymbol));
+                try{
+
+
+                    if(!numberStack.isEmpty()){
+                        if(!number.contentEquals("")){
+                            numberStack.push(number);
+                        }
+                        if(numberStack.get(numberStack.size()-1).contentEquals(addition.getText())
+                                || numberStack.get(numberStack.size()-1).contentEquals(subtraction.getText())
+                                || numberStack.get(numberStack.size()-1).contentEquals(multiplication.getText())
+                                || numberStack.get(numberStack.size()-1).contentEquals(division.getText())){
+                            numberStack.set((numberStack.size() - 1),division.getText().toString());
+                            return ;
+                        }
+
+                        double res = evaluate(numberStack);
+                        numberStack.push(Double.toString(res));
+                        answer.setText(Double.toString(res));
+                    }
+                    else {
+                        numberStack.push(number);
+                    }
+
+                    numberStack.push(division.getText().toString());
+                    initialAnswer.setText("");
+
+
+                    ////////////////////////////////////////////////////////
+
+                   /* if(number.charAt(number.length()-1) == '+' || number.charAt(number.length()-1) == '-'
+                            || number.charAt(number.length()-1) == 'x'
+                            || number.charAt(number.length()-1) == '/'
+                            || number.charAt(number.length()-1) == '%'
+                            || number.charAt(number.length()-1) == '.'
+                            || number.charAt(number.length()-1) == '('
+                            || number.charAt(number.length()-1) == ')'){
+                        return ;
+                    } else{
+
+                        if(!numberStack.isEmpty()){
+                            numberStack.push(number);
+                            Double res = evaluate(numberStack);
+                            numberStack.push(res.toString());
+                            answer.setText(res.toString());
+                            numberStack.push(division.getText().toString());
+                            initialAnswer.setText("");
+                        }else{
+                            numberStack.push(number);
+                            numberStack.push(division.getText().toString());
+                            initialAnswer.setText("");
+                        }
+
+                    }*/
+                   ////////////////////////////////////////////////////////////////
                 }
+                catch (StringIndexOutOfBoundsException ex){
+                    Toast.makeText(MainActivity.this,"Error: "+ex,Toast.LENGTH_SHORT)
+                            .show();
+                    return;
+                }
+
             }
         });
 
         equal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 String number = initialAnswer.getText().toString();
-                if(number.contains("+")){//This loops through the entry and look for the operator if it finds addition it carrries out the code line of code below
-
-                    //We also decided to use try and catch in other to prevent our application from breaking due to numberexception error
-                    try{
-                        String[] numb = number.split("\\+");//This allows us  to split the values entered into two different arrays
-                        Double num1 = Double.parseDouble(numb[0]);//We took the first part of the array
-                        Double num2 = Double.parseDouble(numb[1]);//We took the second part of the array
-                        Double res = add(num1, num2); //Depending the operation we called the corresponding method on it
-                        answer.setText(res.toString());//And then decided to update the value of our answer to reflect on the screen
-                    }catch(NumberFormatException e){
-                        Toast.makeText(MainActivity.this,"Error: "+e,Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                }else if(number.contains("-")){
-                    try{
-                        String[] numb = number.split("-");
-                        Double num1 = Double.parseDouble(numb[0]);
-                        Double num2 = Double.parseDouble(numb[1]);
-                        Double res = subtract(num1,num2);
-                        answer.setText(res.toString());
-                    }catch (NumberFormatException e){
-                        Toast.makeText(MainActivity.this,"Error: "+e,Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-
-                }else if(number.contains("x")){
-                    try{
-                        String[] numb = number.split("x");
-                        double num1 = Double.parseDouble(numb[0]);
-                        double num2 = Double.parseDouble(numb[1]);
-                        Double res = multiply(num1,num2);
-                        answer.setText(res.toString());
-                    }catch(NumberFormatException e){
-                        Toast.makeText(MainActivity.this,"The error is"+e,Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-
-
-                }else if(number.contains("÷")){
-                    try{
-                        String[] numb = number.split("÷");
-                        Double num1 = Double.parseDouble(numb[0]);
-                        Double num2 = Double.parseDouble(numb[1]);
-                        Double res = divide(num1,num2);
-                        answer.setText(res.toString());
-                    }catch(NumberFormatException e){
-                        Toast.makeText(MainActivity.this,"Error: "+e,Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                } else{
-
-                    return;
-                }
-
-
+                numberStack.push(number);
+                double res = evaluate(numberStack);
+                answer.setText(Double.toString(res));
+                initialAnswer.setText(Double.toString(res));
             }
         });
 
+    }
 
+    private Double evaluate(Stack<String> numberStack) {
+    try{
+    Double secondNum = Double.parseDouble(numberStack.pop());
+    String operand = numberStack.pop();
+    Double firstNum = Double.parseDouble(numberStack.pop());
 
+    if(operand.contentEquals(addition.getText())){
+        return add(secondNum,firstNum);
 
+    }else if(operand.contentEquals(subtraction.getText())){
+        return subtract(secondNum,firstNum);
+    }else if(operand.contentEquals(division.getText())){
+        return divide(secondNum,firstNum);
+    }else if(operand.contentEquals(multiplication.getText())){
+        return multiply(secondNum,firstNum);
+    }
 
+    }catch(EmptyStackException em){
+    Toast.makeText(MainActivity.this,"Error: "+em, Toast.LENGTH_SHORT)
+            .show();
+    return null;
+   }
+
+        return null;
     }
 
 
